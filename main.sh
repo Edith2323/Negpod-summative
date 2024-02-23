@@ -7,7 +7,7 @@ echo "Enter your age:"
 read -r  age
 echo "Enter your ID:"
 read -r  id
-formatted_data="$age, $email, $id\n"
+formatted_data="$age, $email, $id"
 echo "$formatted_data" >> "$file_name"
 echo "Student information added successfully."
 }
@@ -41,12 +41,37 @@ list_student() {
     echo "No student information found in the file."
     fi
 }
+
+function update_student() {
+    local student_id
+    read -r -p "Enter student ID to update: " student_id
+
+    if [ -f students-list_1023.txt ] && grep -q "$student_id" students-list_1023.txt; then
+        local email; local age
+        read -r -p "Enter updated email: " email
+        read -r -p "Enter updated age: " age
+        number_regex='^[0-9]+$'
+        email_regex='^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if [ -z "$email" ] || [ -z "$age" ]; then
+            printf "\nAll fields are required\n"
+        elif ! [[ $age =~ $number_regex ]]; then
+            printf "\nAge must be a number\n"
+        elif ! [[ $email =~ $email_regex ]]; then
+            printf "\nInvalid email\n"
+        else
+            sed -i "/$student_id/c\\$email:$age:$student_id" students-list_1023.txt
+            printf "\nStudent with ID %s updated successfully\n" "$student_id"
+        fi
+    else
+        printf "\nStudent with ID %s not found\n" "$student_id"
+    fi
 while true; do
   echo "Menu:"
   echo "1. Add new student"
   echo "2. List students"
  echo "3. Delete student by ID"
- echo "4. Exit the application"
+ echo "4.Update student information"
+ echo "5. Exit application"
   echo "Enter your choice:"
   read -r choice
 case $choice in
@@ -60,13 +85,17 @@ case $choice in
      delete_student
       ;;
     4)
+      update_student
+      ;;
+    5)
+
       echo "Exiting the program."
       break
       ;;
     *)
-	    echo "Invalid choice. Please enter a number between 1 and 3."
+	    echo "Invalid choice. Please enter a number between 1 and 5."
       ;;
   esac
 done
-
 echo "Program terminated."
+ 
